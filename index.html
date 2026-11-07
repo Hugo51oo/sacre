@@ -1045,6 +1045,7 @@ const SPORTS = {
 };
 const GPS_MAX_ACC = 25;      // m — points moins précis ignorés
 const SEG_RADIUS = 30;       // m — tolérance départ/arrivée segment
+const BUILD = '1794038741';
 const IN_FRAME = (() => { try{ return window.self !== window.top; }catch(e){ return true; } })();
 const PREVIEW_MSG = 'Aperçu : le GPS et le fond de carte sont bloqués dans cette fenêtre. Coche <b>Mode démo</b> ci-dessous pour essayer, ou ouvre la version en ligne de Sacre.';
 const TILE_URL = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
@@ -1964,6 +1965,19 @@ document.addEventListener('click', e => {
   const f = Actions[t.dataset.act]; if(f){ e.preventDefault(); f(t, e); }
 });
 
+/* ================= MISE À JOUR AUTO ================= */
+let lastCheck = 0;
+async function checkUpdate(){
+  if(IN_FRAME || location.protocol === 'file:' || Rec.state !== 'idle' || Date.now() - lastCheck < 30000) return;
+  lastCheck = Date.now();
+  try{
+    const r = await fetch(location.pathname + '?check=' + Date.now(), { cache:'no-store' });
+    if(!r.ok) return;
+    const m = (await r.text()).match(/const BUILD = '(\d+)'/);
+    if(m && m[1] !== BUILD){ toast('Nouvelle version de Sacre — mise à jour…'); setTimeout(() => location.replace(location.pathname + '?v=' + m[1]), 900); }
+  }catch(e){}
+}
+
 /* ================= INIT ================= */
 async function savePrefs(){ try{ await DB.put('kv', Prefs, 'prefs'); }catch(e){} }
 async function init(){
@@ -2011,10 +2025,12 @@ async function init(){
   });
   document.addEventListener('visibilitychange', () => {
     if(document.visibilityState === 'visible' && Rec.state !== 'idle') Wake.on();
+    if(document.visibilityState === 'visible') checkUpdate();
     if(document.visibilityState === 'hidden' && Rec.state !== 'idle') Rec.persist();
   });
   window.addEventListener('pagehide', () => { if(Rec.state !== 'idle') Rec.persist(); });
   window.__sacre = { State, Rec, Demo, matchSegment, Track };
+  checkUpdate();
 }
 init();
 })();
