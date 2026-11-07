@@ -711,6 +711,7 @@ main{padding:0 16px calc(98px + env(safe-area-inset-bottom))}
 .mapwrap.mini{height:210px;border-radius:16px;margin:12px 0}
 .map{position:absolute;inset:0}
 .leaflet-container{background:#0D1218;font-family:var(--fb)}
+.tiles-dark{filter:invert(1) hue-rotate(180deg) brightness(.92) contrast(.88) saturate(.55)}
 .leaflet-control-attribution{background:rgba(9,12,17,.72)!important;color:var(--mu2)!important;font-size:9px!important;border-radius:8px 0 0 0}
 .leaflet-control-attribution a{color:var(--mu)!important}
 .me{position:relative}
@@ -964,8 +965,8 @@ const GPS_MAX_ACC = 25;      // m — points moins précis ignorés
 const SEG_RADIUS = 30;       // m — tolérance départ/arrivée segment
 const IN_FRAME = (() => { try{ return window.self !== window.top; }catch(e){ return true; } })();
 const PREVIEW_MSG = 'Aperçu : le GPS et le fond de carte sont bloqués dans cette fenêtre. Coche <b>Mode démo</b> ci-dessous pour essayer, ou ouvre la version en ligne de Sacre.';
-const TILE_URL = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
-const TILE_ATTR = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>';
+const TILE_URL = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
+const TILE_ATTR = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>';
 
 /* ================= UTILS ================= */
 const $ = (s, el=document) => el.querySelector(s);
@@ -1351,7 +1352,7 @@ const Rec = {
 function baseMap(el, opts={}){
   const m = L.map(el, { zoomControl:false, attributionControl:true, maxBounds:L.latLngBounds(REGION.bounds).pad(0.2), maxBoundsViscosity:0.8, minZoom:8, ...opts });
   m.attributionControl.setPrefix(false);
-  L.tileLayer(TILE_URL, { attribution:TILE_ATTR, subdomains:'abcd', maxZoom:19, detectRetina:true }).addTo(m);
+  L.tileLayer(TILE_URL, { attribution:TILE_ATTR, maxZoom:19, className:'tiles-dark' }).addTo(m);
   return m;
 }
 const MapRec = {
